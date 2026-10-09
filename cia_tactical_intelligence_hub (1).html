@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مركز الاستخبارات والعمليات التكتيكية | CIA Operational Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/vis-network.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cia: {
+                            bg: '#080c14',
+                            card: '#0d1527',
+                            border: '#1e2d4a',
+                            accent: '#00f0ff',
+                            gold: '#d4af37',
+                            danger: '#ff2a6d',
+                            warning: '#ffb703',
+                            success: '#05d5b3',
+                            dark: '#04070d'
+                        }
+                    },
+                    fontFamily: {
+                        changa: ['Changa', 'sans-serif'],
+                        mono: ['Share Tech Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Changa', sans-serif;
+            background-color: #080c14;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        .scanline {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0, 240, 255, 0.02) 50%,
+                rgba(0, 0, 0, 0.2)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 99;
+        }
+
+        .cyber-grid {
+            background-image: linear-gradient(to right, rgba(14, 165, 233, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .glitch-text {
+            text-shadow: 0 0 5px rgba(0,240,255,0.5), 0 0 10px rgba(0,240,255,0.3);
+        }
+
+        .holo-border {
+            border: 1px solid #1e2d4a;
+            position: relative;
+        }
+        .holo-border::before {
+            content: '';
+            position: absolute;
+            top: -1px; left: -1px; width: 10px; height: 10px;
+            border-top: 2px solid #00f0ff;
+            border-left: 2px solid #00f0ff;
+        }
+        .holo-border::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; right: -1px; width: 10px; height: 10px;
+            border-bottom: 2px solid #00f0ff;
+            border-right: 2px solid #00f0ff;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080c14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e2d4a;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f0ff;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.33); opacity: 0.8; }
+            80%, 100% { opacity: 0; transform: scale(2); }
+        }
+        .radar-pulse {
+            animation: pulse-ring 3s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        /* STRICT PRINT STYLES - Fixes blank white screen and bad badge layout */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* Hide everything in UI by default */
+            #authScreen, #mainDashboard, .scanline, .no-print, header, aside, .modal-backdrop {
+                display: none !important;
+            }
+
+            /* Show printable area only */
+            #printableArea {
+                display: flex !important;
+                visibility: visible !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                min-height: 100vh !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background: #ffffff !important;
+            }
+
+            /* Dedicated styling for printed ID card */
+            .print-badge-card {
+                width: 380px !important;
+                padding: 24px !important;
+                border: 3px solid #0d1527 !important;
+                border-radius: 16px !important;
+                background: #0a0f1d !important;
+                color: #ffffff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                box-shadow: none !important;
+            }
+
+            .print-badge-card * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-cia-bg text-gray-200 antialiased selection:bg-cia-accent selection:text-black min-h-screen flex flex-col">
+
+    <div class="scanline"></div>
+
+    <div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-cia-dark cyber-grid p-4">
+        <div class="max-w-md w-full bg-cia-card/90 backdrop-blur-md p-6 sm:p-8 rounded-lg holo-border shadow-2xl border border-cia-border relative">
+            
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-cia-bg border-2 border-cia-gold/60 mb-3 shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+                    <i class="fa-solid font-bold text-cia-gold text-3xl fa-shield-halved"></i>
+                </div>
+                <h1 class="text-2xl font-extrabold tracking-wider text-white glitch-text">وكالة الاستخبارات المركزية</h1>
+                <p class="text-xs font-mono text-cia-accent mt-1 tracking-widest">CENTRAL INTELLIGENCE AGENCY • RESTRICTED ACCESS</p>
+                <div class="mt-2 text-xs text-red-500 font-mono bg-red-950/40 border border-red-800/50 py-1 px-2 rounded">
+                    <i class="fa-solid fa-triangle-exclamation ml-1"></i> النظام مراقب بالكامل. الدخول للمصرح لهم فقط.
+                </div>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">اسم العميل (Agent Identifier):</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </span>
+                        <input type="text" id="username" required 
+                            class="w-full bg-cia-bg border border-cia-border rounded py-2 pr-10 pl-3 text-sm font-mono text-cia-accent focus:outline-none focus:border-cia-accent transition"
+                            placeholder="Agent_alpha">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">رمز المرور التكتيكي (Clearance Key):</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
+                            <i class="fa-solid fa-key"></i>
+                        </span>
+                        <input type="password" id="password" required 
+                            class="w-full bg-cia-bg border border-cia-border rounded py-2 pr-10 pl-3 text-sm font-mono text-cia-accent focus:outline-none focus:border-cia-accent transition"
+                            placeholder="••••••••••••">
+                    </div>
+                </div>
+
+                <div class="bg-cia-bg/80 border border-cia-border/70 p-3 rounded text-xs space-y-1">
+                    <div class="text-cia-gold font-bold flex justify-between items-center">
+                        <span><i class="fa-solid fa-circle-info ml-1"></i> بيانات الدخول التجريبية:</span>
+                        <button type="button" onclick="fillQuickCredentials()" class="text-[10px] bg-cia-border hover:bg-cia-accent hover:text-black text-gray-300 px-2 py-0.5 rounded transition">تعبئة تلقائية</button>
+                    </div>
+                    <div class="font-mono text-gray-400">اسم المستخدم: <span class="text-cia-accent select-all">Agent_alpha</span></div>
+                    <div class="font-mono text-gray-400">كلمة المرور: <span class="text-cia-accent select-all">cia2026_classified</span></div>
+                </div>
+
+                <button type="submit" id="loginBtn" class="w-full bg-cia-accent hover:bg-cyan-400 text-black font-bold py-2.5 rounded transition duration-200 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+                    <i class="fa-solid fa-lock-open"></i>
+                    <span>تأكيد الهوية والولوج للنظام</span>
+                </button>
+            </form>
+
+            <div id="loginStatus" class="mt-4 text-center text-xs font-mono hidden"></div>
+        </div>
+    </div>
+
+    <div id="mainDashboard" class="hidden flex-1 flex flex-col md:flex-row h-screen overflow-hidden">
+        
+        <aside class="w-full md:w-64 bg-cia-card border-b md:border-b-0 md:border-l border-cia-border flex flex-col z-20 shrink-0">
+            <div class="p-4 border-b border-cia-border flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded bg-cia-bg border border-cia-gold/50 flex items-center justify-center text-cia-gold font-bold">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-white text-sm tracking-wide">CIA HUB</h2>
+                        <p class="text-[10px] font-mono text-cia-accent">CLEARANCE LEVEL 5</p>
+                    </div>
+                </div>
+                <div class="relative flex h-2 w-2">
+                  <span class="radar-pulse absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </div>
+            </div>
+
+            <div class="p-3 bg-cia-bg/60 border-b border-cia-border/50 text-xs flex items-center gap-2 font-mono">
+                <i class="fa-solid fa-user-secret text-cia-gold text-lg"></i>
+                <div class="overflow-hidden">
+                    <div id="activeAgentName" class="text-white font-bold truncate">العميل ألفا</div>
+                    <div class="text-[10px] text-gray-400 truncate">ID: CIA-9082-ALPHA</div>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-2 space-y-1 overflow-y-auto">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm text-cia-accent bg-cia-border/40 font-semibold border-r-2 border-cia-accent transition">
+                    <i class="fa-solid fa-chart-line w-5"></i>
+                    <span>مركز العمليات (Dashboard)</span>
+                </button>
+                <button onclick="switchTab('syndicate')" id="nav-syndicate" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm text-gray-400 hover:text-white hover:bg-cia-border/30 transition">
+                    <i class="fa-solid fa-diagram-project w-5"></i>
+                    <span>شبكة الجريمة والأهداف</span>
+                </button>
+                <button onclick="switchTab('reports')" id="nav-reports" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm text-gray-400 hover:text-white hover:bg-cia-border/30 transition">
+                    <i class="fa-solid fa-file-contract w-5"></i>
+                    <span>التقارير المخابراتية</span>
+                </button>
+                <button onclick="switchTab('recruitment')" id="nav-recruitment" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm text-gray-400 hover:text-white hover:bg-cia-border/30 transition">
+                    <i class="fa-solid fa-id-card w-5"></i>
+                    <span>التوظيف والتصريح الأمني</span>
+                </button>
+            </nav>
+
+            <div class="p-3 border-t border-cia-border space-y-2">
+                <div class="text-[10px] font-mono text-gray-500 text-center">SECURE CONNECTION • ENCRYPTED AES-256</div>
+                <button onclick="logout()" class="w-full bg-red-950/40 hover:bg-red-900/60 border border-red-800 text-red-400 py-1.5 rounded text-xs font-mono transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-power-off"></i>
+                    <span>إنهاء الجلسة (Logout)</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 bg-cia-bg overflow-y-auto flex flex-col relative">
+            <header class="bg-cia-card/50 border-b border-cia-border px-6 py-3 flex flex-wrap items-center justify-between gap-4 backdrop-blur-md sticky top-0 z-10">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-mono bg-cia-border/80 px-2 py-1 rounded text-gray-300">DEFCON STATUS: <strong class="text-cia-warning">LEVEL 3</strong></span>
+                    <span class="text-xs font-mono text-gray-400 hidden sm:inline"><i class="fa-solid fa-globe text-cia-accent ml-1"></i> GLOBAL SURVEILLANCE GRID ACTIVE</span>
+                </div>
+                <div class="flex items-center gap-4 text-xs font-mono">
+                    <span id="liveClock" class="text-cia-accent font-bold">00:00:00 UTC</span>
+                    <button onclick="resetDataToDefault()" class="text-gray-400 hover:text-cia-danger transition text-xs" title="إعادة ضبط البيانات الافتراضية">
+                        <i class="fa-solid fa-arrows-rotate ml-1"></i> إعادة ضبط البيانات
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Operations Main Panel -->
+            <section id="section-dashboard" class="p-4 sm:p-6 space-y-6 flex-1">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-network-wired text-cia-accent"></i>
+                            مركز القيادة وتدفق الاستخبارات الفوري
+                        </h2>
+                        <p class="text-xs text-gray-400">مراقبة التهديدات القومية النشطة والأنشطة المشبوهة عالمياً</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="switchTab('syndicate')" class="bg-cia-border hover:bg-cia-border/80 text-white text-xs px-3 py-2 rounded font-mono transition">
+                            <i class="fa-solid fa-plus ml-1"></i> هدف جديد
+                        </button>
+                        <button onclick="switchTab('reports')" class="bg-cia-accent hover:bg-cyan-400 text-black font-bold text-xs px-3 py-2 rounded transition">
+                            <i class="fa-solid fa-pen-to-square ml-1"></i> تقرير سري
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-cia-card p-4 rounded border border-cia-border holo-border">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs text-gray-400 font-mono">الأهداف النشطة (High Priority)</p>
+                                <h3 id="statTotalTargets" class="text-2xl font-bold text-white mt-1">0</h3>
+                            </div>
+                            <span class="p-2 bg-red-950/60 border border-red-800 text-red-400 rounded"><i class="fa-solid fa-crosshairs"></i></span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-red-400 font-mono"><i class="fa-solid fa-arrow-up"></i> أهداف عالية الخطورة</div>
+                    </div>
+
+                    <div class="bg-cia-card p-4 rounded border border-cia-border holo-border">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs text-gray-400 font-mono">شبكات الجريمة المرصودة</p>
+                                <h3 id="statTotalNetworks" class="text-2xl font-bold text-cia-accent mt-1">0</h3>
+                            </div>
+                            <span class="p-2 bg-cyan-950/60 border border-cyan-800 text-cia-accent rounded"><i class="fa-solid fa-sitemap"></i></span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-cia-accent font-mono"><i class="fa-solid fa-link"></i> شبكات متداخلة نشطة</div>
+                    </div>
+
+                    <div class="bg-cia-card p-4 rounded border border-cia-border holo-border">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs text-gray-400 font-mono">التقارير المرفوعة</p>
+                                <h3 id="statTotalReports" class="text-2xl font-bold text-cia-gold mt-1">0</h3>
+                            </div>
+                            <span class="p-2 bg-amber-950/60 border border-amber-800 text-cia-gold rounded"><i class="fa-solid fa-file-shield"></i></span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-cia-gold font-mono"><i class="fa-solid fa-lock"></i> مصنفة TOP SECRET</div>
+                    </div>
+
+                    <div class="bg-cia-card p-4 rounded border border-cia-border holo-border">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs text-gray-400 font-mono">العملاء الميدانيون</p>
+                                <h3 id="statTotalAgents" class="text-2xl font-bold text-cia-success mt-1">0</h3>
+                            </div>
+                            <span class="p-2 bg-emerald-950/60 border border-emerald-800 text-cia-success rounded"><i class="fa-solid fa-user-shield"></i></span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-cia-success font-mono"><i class="fa-solid fa-check"></i> تصاريح أمنية سارية</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-cia-card p-4 rounded border border-cia-border flex flex-col h-80 sm:h-96 relative overflow-hidden">
+                        <div class="flex justify-between items-center mb-3 z-10">
+                            <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2">
+                                <i class="fa-solid fa-earth-americas text-cia-accent"></i> خريطة المراقبة والاعتراض التكتيكي
+                            </h3>
+                            <span class="text-[10px] bg-red-900/40 border border-red-700 text-red-300 px-2 py-0.5 rounded font-mono">LIVE FEED</span>
+                        </div>
+
+                        <div class="flex-1 bg-cia-dark rounded border border-cia-border/60 relative overflow-hidden flex items-center justify-center">
+                            <div class="absolute inset-0 cyber-grid opacity-30"></div>
+                            <div class="absolute w-64 h-64 border border-cia-accent/20 rounded-full"></div>
+                            <div class="absolute w-44 h-44 border border-cia-accent/30 rounded-full"></div>
+                            <div class="absolute w-24 h-24 border border-cia-accent/40 rounded-full"></div>
+                            <div class="absolute w-full h-[1px] bg-cia-accent/20"></div>
+                            <div class="absolute h-full w-[1px] bg-cia-accent/20"></div>
+
+                            <div class="absolute top-1/3 left-1/4 flex items-center gap-1 group cursor-pointer">
+                                <span class="relative flex h-3 w-3">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+                                </span>
+                                <span class="text-[10px] font-mono text-red-400 bg-black/80 px-1 border border-red-800 rounded">TARGET #109</span>
+                            </div>
+
+                            <div class="absolute bottom-1/4 right-1/3 flex items-center gap-1">
+                                <span class="relative flex h-3 w-3">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                                </span>
+                                <span class="text-[10px] font-mono text-amber-300 bg-black/80 px-1 border border-amber-800 rounded">INTERCEPT LOG</span>
+                            </div>
+
+                            <div class="absolute bottom-6 left-6 bg-cia-card/90 border border-cia-border p-2 rounded text-[11px] font-mono space-y-1 z-10">
+                                <div>موقع الاعتراض: <span class="text-white">37.7749° N, 122.4194° W</span></div>
+                                <div>تشفير الإشارة: <span class="text-cia-accent">QUANTUM-256</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-cia-card p-4 rounded border border-cia-border flex flex-col h-80 sm:h-96">
+                        <h3 class="text-sm font-bold text-white font-mono mb-3 flex items-center justify-between">
+                            <span><i class="fa-solid fa-list-check text-cia-gold ml-1"></i> السجل التكتيكي اللحظي</span>
+                            <span class="text-[10px] text-gray-500">سجل المشفر</span>
+                        </h3>
+                        <div id="activityStream" class="flex-1 overflow-y-auto space-y-2 font-mono text-xs pr-1"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-sm font-bold text-white font-mono">
+                            <i class="fa-solid fa-triangle-exclamation text-red-500 ml-1"></i> أبرز الأهداف المطلوبة فورياً
+                        </h3>
+                        <button onclick="switchTab('syndicate')" class="text-xs text-cia-accent hover:underline font-mono">عرض كل الأهداف ←</button>
+                    </div>
+                    <div id="topTargetsList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+                </div>
+            </section>
+
+            <section id="section-syndicate" class="p-4 sm:p-6 space-y-6 hidden flex-1">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-diagram-project text-cia-accent"></i>
+                            نظام بناء شبكات الجريمة والتحليل الاستخباراتي (Syndicate Builder)
+                        </h2>
+                        <p class="text-xs text-gray-400">إضافة الأهداف وإقامة العلاقات التكتيكية والتحليل المترابط للشبكات</p>
+                    </div>
+                    <button onclick="toggleModal('addCriminalModal', true)" class="bg-cia-danger hover:bg-red-600 text-white font-bold text-xs px-4 py-2 rounded font-mono transition flex items-center gap-2 shadow-[0_0_10px_rgba(255,42,109,0.4)]">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>إضافة هدف/مجرم جديد</span>
+                    </button>
+                </div>
+
+                <div class="bg-cia-card p-4 rounded border border-cia-border holo-border">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                        <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2">
+                            <i class="fa-solid fa-circle-nodes text-cia-accent"></i> خريطة الروابط والتسلسل الهرمي للشبكة
+                        </h3>
+                        <div class="flex items-center gap-2 text-xs font-mono">
+                            <button onclick="openLinkModal()" class="bg-cia-border hover:bg-cia-accent hover:text-black text-gray-200 px-3 py-1 rounded transition">
+                                <i class="fa-solid fa-link ml-1"></i> ربط بين هدفين
+                            </button>
+                            <span class="text-gray-500">| اسحب العقد للتنظيم</span>
+                        </div>
+                    </div>
+                    
+                    <div id="networkVisualization" class="w-full h-96 bg-cia-dark rounded border border-cia-border/80 relative"></div>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-bold text-white font-mono mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-folder-open text-cia-gold"></i>
+                        سجل المشتبه بهم والأهداف المسجلة
+                    </h3>
+                    <div id="criminalsDirectory" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                </div>
+            </section>
+
+            <section id="section-reports" class="p-4 sm:p-6 space-y-6 hidden flex-1">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-file-contract text-cia-gold"></i>
+                            نظام التقارير المخابراتية المشفرة (Classified Dossiers)
+                        </h2>
+                        <p class="text-xs text-gray-400">تحرير القضايا، تحديد درجات السرية، وتصدير التقارير بختم المخابرات الرسمية</p>
+                    </div>
+                    <button onclick="toggleModal('addReportModal', true)" class="bg-cia-gold hover:bg-amber-400 text-black font-bold text-xs px-4 py-2 rounded font-mono transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-circle-plus"></i>
+                        <span>صياغة تقرير سري جديد</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-cia-card p-4 rounded border border-cia-border space-y-3">
+                        <h3 class="text-sm font-bold text-white font-mono flex items-center justify-between border-b border-cia-border pb-2">
+                            <span><i class="fa-solid fa-list ml-1 text-cia-accent"></i> أرشيف التقارير</span>
+                            <span id="reportsCountBadge" class="bg-cia-border text-cia-accent text-[10px] px-2 py-0.5 rounded font-mono">0</span>
+                        </h3>
+                        <div id="reportsList" class="space-y-2 max-h-[500px] overflow-y-auto pr-1"></div>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-cia-card p-6 rounded border border-cia-border holo-border relative flex flex-col justify-between" id="reportViewerContainer">
+                        <div id="reportContentView" class="space-y-4">
+                            <div class="text-center text-gray-500 py-12 font-mono">
+                                <i class="fa-solid fa-file-shield text-4xl mb-3 block text-cia-border"></i>
+                                اختر تقريراً من القائمة الجانبية لمعاينته وتصديره، أو أنشئ تقريراً جديداً.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="section-recruitment" class="p-4 sm:p-6 space-y-6 hidden flex-1">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-id-card text-cia-success"></i>
+                            منظومة الانضمام وتأهيل العملاء (Agent Onboarding & Clearance)
+                        </h2>
+                        <p class="text-xs text-gray-400">تقديم طلبات التوظيف واستخراج بطاقات الهوية الأمنية المعتمدة للعملاء</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-cia-card p-5 rounded border border-cia-border space-y-4">
+                        <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2 border-b border-cia-border pb-2">
+                            <i class="fa-solid fa-user-pen text-cia-accent"></i>
+                            استمارة الحصول على التصريح الأمني (Agent Badge Registration)
+                        </h3>
+
+                        <form id="agentRegisterForm" onsubmit="handleAgentRegistration(event)" class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-mono text-gray-300 mb-1">الاسم الكامل للعميل / المتقدم:</label>
+                                <input type="text" id="agentFullName" required 
+                                    class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none"
+                                    placeholder="مثال: د. طارق المنصور">
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-mono text-gray-300 mb-1">الاسم المستعار (Codename):</label>
+                                    <input type="text" id="agentCodename" required 
+                                        class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-cia-gold focus:border-cia-accent focus:outline-none"
+                                        placeholder="GHOST_PROTOCOL">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-mono text-gray-300 mb-1">مستوى التصريح (Clearance):</label>
+                                    <select id="agentClearance" class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none">
+                                        <option value="LEVEL 3 - CONFIDENTIAL">LEVEL 3 - CONFIDENTIAL</option>
+                                        <option value="LEVEL 4 - SECRET">LEVEL 4 - SECRET</option>
+                                        <option value="LEVEL 5 - TOP SECRET" selected>LEVEL 5 - TOP SECRET / SCI</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-mono text-gray-300 mb-1">التخصص التكتيكي / المهارة الميدانية:</label>
+                                <input type="text" id="agentSpecialty" required 
+                                    class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none"
+                                    placeholder="Cyber Intelligence / Field Tactics / Reconnaissance">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-mono text-gray-300 mb-1">رابط الصورة الشخصية (أو اتركها للافتراضية):</label>
+                                <input type="url" id="agentPhotoUrl" 
+                                    class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none"
+                                    placeholder="https://images.unsplash.com/...">
+                            </div>
+
+                            <button type="submit" class="w-full bg-cia-success hover:bg-emerald-400 text-black font-bold py-2 rounded text-xs font-mono transition shadow-[0_0_10px_rgba(5,213,179,0.3)]">
+                                <i class="fa-solid fa-passport ml-1"></i> إصدار وتحديث بطاقة الاعتماد الأمنية
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Badge Live Interactive Preview Container -->
+                    <div class="flex flex-col items-center justify-center bg-cia-card p-6 rounded border border-cia-border holo-border relative">
+                        <span class="text-xs font-mono text-gray-400 mb-4"><i class="fa-solid fa-print ml-1"></i> معاينة بطاقة الهوية الأمنية الرسمية (Agent Badge)</span>
+                        
+                        <div id="badgeCard" class="w-full max-w-sm bg-gradient-to-br from-gray-900 via-cia-card to-black p-5 rounded-xl border-2 border-cia-gold shadow-2xl relative overflow-hidden font-mono text-xs">
+                            <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-cia-gold/10 rounded-full blur-xl pointer-events-none"></div>
+                            
+                            <div class="flex items-center justify-between border-b border-cia-gold/40 pb-3 mb-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-shield-halved text-cia-gold text-xl"></i>
+                                    <div>
+                                        <div class="text-[10px] font-bold text-white tracking-widest">CENTRAL INTELLIGENCE AGENCY</div>
+                                        <div class="text-[8px] text-cia-accent">OFFICIAL CREDENTIAL</div>
+                                    </div>
+                                </div>
+                                <span class="text-[8px] bg-cia-gold/20 text-cia-gold border border-cia-gold/50 px-1.5 py-0.5 rounded">VERIFIED</span>
+                            </div>
+
+                            <div class="flex gap-4 items-start">
+                                <div class="w-24 h-28 bg-cia-bg border border-cia-border rounded overflow-hidden shrink-0 relative">
+                                    <img id="badgeImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300" class="w-full h-full object-cover" alt="Agent Avatar">
+                                    <div class="absolute bottom-0 w-full bg-black/80 text-[8px] text-center text-cia-accent py-0.5">CIA AGENT</div>
+                                </div>
+
+                                <div class="space-y-1.5 flex-1">
+                                    <div>
+                                        <div class="text-[9px] text-gray-400">FULL NAME:</div>
+                                        <div id="badgeName" class="text-white font-bold text-sm truncate">د. طارق المنصور</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[9px] text-gray-400">CODENAME:</div>
+                                        <div id="badgeCode" class="text-cia-gold font-bold">GHOST_PROTOCOL</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[9px] text-gray-400">CLEARANCE:</div>
+                                        <div id="badgeClearance" class="text-cia-accent text-[10px]">LEVEL 5 - TOP SECRET</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-t border-cia-border/80 flex items-center justify-between text-[9px] text-gray-400">
+                                <div>SPECIALTY: <span id="badgeSpecialty" class="text-gray-200">CYBER INTEL</span></div>
+                                <div id="badgeIdNum" class="text-cia-accent font-mono">ID: CIA-88219</div>
+                            </div>
+                        </div>
+
+                        <!-- Print Trigger Button -->
+                        <button onclick="printAgentBadge()" class="mt-5 bg-cia-accent hover:bg-cyan-400 text-black font-bold px-6 py-2.5 rounded text-xs font-mono transition flex items-center gap-2 shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+                            <i class="fa-solid fa-print"></i>
+                            <span>طباعة الهوية Security Badge</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-cia-card p-4 rounded border border-cia-border">
+                    <h3 class="text-sm font-bold text-white font-mono mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-users-viewfinder text-cia-accent"></i>
+                        سجل العملاء والمصرح لهم بالنظام
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs font-mono">
+                            <thead class="bg-cia-bg border-b border-cia-border text-gray-400">
+                                <tr>
+                                    <th class="p-2">العميل</th>
+                                    <th class="p-2">الاسم المستعار</th>
+                                    <th class="p-2">مستوى التصريح</th>
+                                    <th class="p-2">التخصص</th>
+                                    <th class="p-2">المعرف</th>
+                                </tr>
+                            </thead>
+                            <tbody id="agentsTableBody" class="divide-y divide-cia-border/50 text-gray-300"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal: Add Criminal -->
+    <div id="addCriminalModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-cia-card max-w-lg w-full rounded border border-cia-border holo-border p-5 space-y-4">
+            <div class="flex justify-between items-center border-b border-cia-border pb-2">
+                <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus text-cia-danger"></i> إضافة هدف / مجرم جديد للشبكة
+                </h3>
+                <button onclick="toggleModal('addCriminalModal', false)" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="criminalForm" onsubmit="handleAddCriminal(event)" class="space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-mono text-gray-300 mb-1">الاسم الحقيقي / الكامل:</label>
+                        <input type="text" id="crimName" required class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono text-gray-300 mb-1">الاسم المستعار / الحركي:</label>
+                        <input type="text" id="crimAlias" required class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-cia-gold focus:border-cia-accent focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-mono text-gray-300 mb-1">درجة الخطورة:</label>
+                        <select id="crimThreat" class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none">
+                            <option value="CRITICAL">حرِج للغاية (CRITICAL)</option>
+                            <option value="HIGH" selected>عالي الخطورة (HIGH)</option>
+                            <option value="MODERATE">متوسط (MODERATE)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono text-gray-300 mb-1">الحالة الميدانية:</label>
+                        <select id="crimStatus" class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none">
+                            <option value="WANTED" selected>مطلوب (WANTED)</option>
+                            <option value="CAPTURED">معتقل (CAPTURED)</option>
+                            <option value="NEUTRALIZED">تم تحييده (NEUTRALIZED)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-gray-300 mb-1">رابط صورة الهدف (اختياري):</label>
+                    <input type="url" id="crimPhoto" class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none" placeholder="https://...">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-gray-300 mb-1">الملف والوصف الاستخباراتي:</label>
+                    <textarea id="crimDesc" rows="3" required class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none" placeholder="اكتب التفاصيل والجرائم والتنظيم المرتبط به..."></textarea>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="toggleModal('addCriminalModal', false)" class="bg-cia-border hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded text-xs font-mono">إلغاء</button>
+                    <button type="submit" class="bg-cia-danger hover:bg-red-600 text-white font-bold px-4 py-1.5 rounded text-xs font-mono">حفظ الهدف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Link Two Criminals -->
+    <div id="linkModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-cia-card max-w-md w-full rounded border border-cia-border holo-border p-5 space-y-4">
+            <div class="flex justify-between items-center border-b border-cia-border pb-2">
+                <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2">
+                    <i class="fa-solid fa-link text-cia-accent"></i> إنشاء رابط بين هدفين
+                </h3>
+                <button onclick="toggleModal('linkModal', false)" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="linkForm" onsubmit="handleCreateLink(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-mono text-gray-300 mb-1">الهدف الأول (العقدة الأولى):</label>
+                    <select id="linkFrom" required class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none"></select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-gray-300 mb-1">الهدف الثاني (العقدة الثانية):</label>
+                    <select id="linkTo" required class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none"></select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-gray-300 mb-1">نوع العلاقة / الاتصال:</label>
+                    <input type="text" id="linkLabel" required placeholder="مثال: تمويل / قائد المليشيا / شريك تهريب" class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="toggleModal('linkModal', false)" class="bg-cia-border hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded text-xs font-mono">إلغاء</button>
+                    <button type="submit" class="bg-cia-accent hover:bg-cyan-400 text-black font-bold px-4 py-1.5 rounded text-xs font-mono">تأكيد الربط</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Add Intelligence Report -->
+    <div id="addReportModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-cia-card max-w-lg w-full rounded border border-cia-border holo-border p-5 space-y-4">
+            <div class="flex justify-between items-center border-b border-cia-border pb-2">
+                <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2">
+                    <i class="fa-solid fa-file-pen text-cia-gold"></i> صياغة تقرير سري جديد
+                </h3>
+                <button onclick="toggleModal('addReportModal', false)" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="reportForm" onsubmit="handleAddReport(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-mono text-gray-300 mb-1">عنوان التقرير:</label>
+                    <input type="text" id="repTitle" required placeholder="مثال: عملية الأشباح - تحركات الخلية الشمالية" class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-mono text-gray-300 mb-1">تصنيف السرية:</label>
+                        <select id="repClassification" class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none">
+                            <option value="TOP SECRET">TOP SECRET / sERRI</option>
+                            <option value="RESTRICTED">RESTRICTED / محظور</option>
+                            <option value="EYES ONLY">EYES ONLY / للأنظار المصرحة فقط</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono text-gray-300 mb-1">المنطقة / الإقليم المعني:</label>
+                        <input type="text" id="repRegion" required placeholder="مثال: الشرق الأوسط / القطاع 7" class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-gray-300 mb-1">محتوى وتفاصيل التقرير الاستخباراتي:</label>
+                    <textarea id="repContent" rows="5" required placeholder="اكتب الملاحظات الميدانية والنتائج..." class="w-full bg-cia-bg border border-cia-border rounded p-2 text-xs font-mono text-white focus:border-cia-accent focus:outline-none"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="toggleModal('addReportModal', false)" class="bg-cia-border hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded text-xs font-mono">إلغاء</button>
+                    <button type="submit" class="bg-cia-gold hover:bg-amber-400 text-black font-bold px-4 py-1.5 rounded text-xs font-mono">حفظ وتأكيد التقرير</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CLEAN PRINT CONTAINER (EXCLUSIVE PRINT TARGET) -->
+    <div id="printableArea" class="hidden"></div>
+
+    <script>
+        const initialData = {
+            criminals: [
+                {
+                    id: 'crim_1',
+                    name: 'فيكتور الكاسر',
+                    alias: 'SHADOW_LORD',
+                    threat: 'CRITICAL',
+                    status: 'WANTED',
+                    photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300',
+                    desc: 'قائد شبكة تهريب الأسلحة المتقدمة وغسيل الأموال العابرة للحدود.'
+                },
+                {
+                    id: 'crim_2',
+                    name: 'ماركوس ستيل',
+                    alias: 'CYBER_VIPER',
+                    threat: 'HIGH',
+                    status: 'WANTED',
+                    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300',
+                    desc: 'خبير هجمات سيبرانية مسؤول عن اختراق البنية التحتية للطاقة.'
+                },
+                {
+                    id: 'crim_3',
+                    name: 'إيلينا كوفاتش',
+                    alias: 'RED_SPIDER',
+                    threat: 'HIGH',
+                    status: 'CAPTURED',
+                    photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300',
+                    desc: 'مسؤولة التمويل الرقمي المظلم لشبكات الجريمة الدولية.'
+                }
+            ],
+            links: [
+                { from: 'crim_1', to: 'crim_2', label: 'دعم هجمات سيبرانية' },
+                { from: 'crim_1', to: 'crim_3', label: 'غسيل أموال' }
+            ],
+            reports: [
+                {
+                    id: 'rep_1',
+                    title: 'اعتراض اتصالات شبكة الأشباح السيبرانية',
+                    classification: 'TOP SECRET',
+                    region: 'القطاع الأوراسي',
+                    date: '2026-10-04',
+                    author: 'Agent_alpha',
+                    content: 'تم تقاطع إشارات مشفرة عالية التردد صادرة من الخادم المحايد. البيانات تشير إلى ترتيبات لعملية اختراق واسعة النطاق تستهدف خطوط الإمداد.'
+                },
+                {
+                    id: 'rep_2',
+                    title: 'تقرير تعقب الأصول المالية المشبوهة',
+                    classification: 'RESTRICTED',
+                    region: 'أمريكا اللاتينية',
+                    date: '2026-10-02',
+                    author: 'Agent_alpha',
+                    content: 'رصد تحويلات رقمية بلغت 14 مليون دولار عبر محافط مجهولة المصدر مرتبطة بالهدف "فيكتور الكاسر".'
+                }
+            ],
+            agents: [
+                {
+                    id: 'CIA-9082-ALPHA',
+                    name: 'العميل ألفا',
+                    codename: 'Agent_alpha',
+                    clearance: 'LEVEL 5 - TOP SECRET',
+                    specialty: 'Cyber Operations & Recon',
+                    photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300'
+                }
+            ],
+            activities: [
+                'تم الدخول إلى نظام المراقبة المركزية.',
+                'تحديث ملف الهدف: فيكتور الكاسر [WANTED].',
+                'إنشاء تقرير سري جديد ID: #REP-8821'
+            ]
+        };
+
+        let db = { criminals: [], links: [], reports: [], agents: [], activities: [] };
+        let visNetworkInstance = null;
+
+        window.onload = function() {
+            loadStorage();
+            updateLiveClock();
+            setInterval(updateLiveClock, 1000);
+            renderAllSections();
+        };
+
+        function loadStorage() {
+            const stored = localStorage.getItem('cia_hub_db');
+            if (stored) {
+                try { db = JSON.parse(stored); } 
+                catch(e) { db = JSON.parse(JSON.stringify(initialData)); }
+            } else {
+                db = JSON.parse(JSON.stringify(initialData));
+                saveStorage();
+            }
+        }
+
+        function saveStorage() {
+            localStorage.setItem('cia_hub_db', JSON.stringify(db));
+        }
+
+        function resetDataToDefault() {
+            if (confirm('هل أنت تأكد من إرجاع كافة البيانات الاستخباراتية إلى الوضع الافتراضي؟')) {
+                db = JSON.parse(JSON.stringify(initialData));
+                saveStorage();
+                renderAllSections();
+                addActivityLog('تمت إعادة ضبط البيانات إلى الحالة الافتراضية.');
+            }
+        }
+
+        function updateLiveClock() {
+            const now = new Date();
+            const timeStr = now.toUTCString().split(' ')[4] + ' UTC';
+            document.getElementById('liveClock').innerText = timeStr;
+        }
+
+        function fillQuickCredentials() {
+            document.getElementById('username').value = 'Agent_alpha';
+            document.getElementById('password').value = 'cia2026_classified';
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const status = document.getElementById('loginStatus');
+
+            status.classList.remove('hidden');
+            status.innerHTML = `<span class="text-cia-accent"><i class="fa-solid fa-spinner animate-spin"></i> جاري فحص الهوية والتصريح الأمني...</span>`;
+
+            setTimeout(() => {
+                if (user === 'Agent_alpha' && pass === 'cia2026_classified') {
+                    status.innerHTML = `<span class="text-cia-success"><i class="fa-solid fa-check-circle"></i> تم تأكيد الهوية. جاري الولوج...</span>`;
+                    setTimeout(() => {
+                        document.getElementById('authScreen').classList.add('hidden');
+                        document.getElementById('mainDashboard').classList.remove('hidden');
+                        renderNetworkGraph();
+                        addActivityLog(`العميل ${user} قام بتسجيل الدخول بنجاح.`);
+                    }, 600);
+                } else {
+                    status.innerHTML = `<span class="text-cia-danger"><i class="fa-solid fa-circle-xmark"></i> خطأ: بيانات الدخول غير صحيحة.</span>`;
+                }
+            }, 800);
+        }
+
+        function logout() {
+            document.getElementById('authScreen').classList.remove('hidden');
+            document.getElementById('mainDashboard').classList.add('hidden');
+            document.getElementById('loginStatus').classList.add('hidden');
+        }
+
+        function switchTab(tabId) {
+            const sections = ['dashboard', 'syndicate', 'reports', 'recruitment'];
+            sections.forEach(s => {
+                const secEl = document.getElementById(`section-${s}`);
+                const navEl = document.getElementById(`nav-${s}`);
+                
+                if (s === tabId) {
+                    secEl.classList.remove('hidden');
+                    navEl.className = "nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm text-cia-accent bg-cia-border/40 font-semibold border-r-2 border-cia-accent transition";
+                } else {
+                    secEl.classList.add('hidden');
+                    navEl.className = "nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm text-gray-400 hover:text-white hover:bg-cia-border/30 transition";
+                }
+            });
+
+            if (tabId === 'syndicate') {
+                setTimeout(renderNetworkGraph, 100);
+            }
+        }
+
+        function renderAllSections() {
+            renderDashboardStats();
+            renderActivityStream();
+            renderCriminals();
+            renderReports();
+            renderAgents();
+        }
+
+        function addActivityLog(msg) {
+            const time = new Date().toLocaleTimeString('ar-EG');
+            db.activities.unshift(`[${time}] ${msg}`);
+            if (db.activities.length > 20) db.activities.pop();
+            saveStorage();
+            renderActivityStream();
+        }
+
+        function renderActivityStream() {
+            const container = document.getElementById('activityStream');
+            container.innerHTML = db.activities.map(act => `
+                <div class="bg-cia-bg/60 p-2 rounded border border-cia-border/40 text-gray-300">
+                    <span class="text-cia-accent">${act.split(']')[0]}]</span> ${act.split(']')[1] || ''}
+                </div>
+            `).join('');
+        }
+
+        function renderDashboardStats() {
+            document.getElementById('statTotalTargets').innerText = db.criminals.length;
+            document.getElementById('statTotalNetworks').innerText = db.links.length;
+            document.getElementById('statTotalReports').innerText = db.reports.length;
+            document.getElementById('statTotalAgents').innerText = db.agents.length;
+
+            const topTargetsContainer = document.getElementById('topTargetsList');
+            const topTargets = db.criminals.slice(0, 3);
+            
+            topTargetsContainer.innerHTML = topTargets.map(c => `
+                <div class="bg-cia-card p-3 rounded border border-cia-border flex items-center gap-3">
+                    <img src="${c.photo || 'https://placehold.co/100?text=Target'}" class="w-12 h-12 rounded object-cover border border-cia-border" onerror="this.src='https://placehold.co/100?text=Target'">
+                    <div class="overflow-hidden">
+                        <div class="text-xs font-bold text-white truncate">${c.name}</div>
+                        <div class="text-[10px] text-cia-gold font-mono">${c.alias}</div>
+                        <span class="text-[9px] px-1.5 py-0.5 rounded font-mono ${c.threat === 'CRITICAL' ? 'bg-red-950 text-red-400 border border-red-800' : 'bg-amber-950 text-amber-400'}">${c.threat}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCriminals() {
+            const container = document.getElementById('criminalsDirectory');
+            container.innerHTML = db.criminals.map(c => `
+                <div class="bg-cia-card p-4 rounded border border-cia-border holo-border flex flex-col justify-between space-y-3">
+                    <div class="flex items-start gap-3">
+                        <img src="${c.photo}" class="w-16 h-16 rounded border border-cia-border object-cover shrink-0" onerror="this.src='https://placehold.co/150?text=CIA+Target'">
+                        <div class="overflow-hidden space-y-1">
+                            <h4 class="font-bold text-white text-sm truncate">${c.name}</h4>
+                            <div class="text-xs font-mono text-cia-gold"><i class="fa-solid fa-user-ninja ml-1"></i>${c.alias}</div>
+                            <div class="flex flex-wrap gap-1 text-[9px] font-mono">
+                                <span class="bg-red-950 text-red-400 border border-red-800 px-1.5 py-0.5 rounded">${c.threat}</span>
+                                <span class="bg-cia-border text-cia-accent px-1.5 py-0.5 rounded">${c.status}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400 line-clamp-2">${c.desc}</p>
+                    <div class="flex justify-between items-center pt-2 border-t border-cia-border/50 text-xs">
+                        <button onclick="deleteCriminal('${c.id}')" class="text-red-400 hover:text-red-300 font-mono text-[11px]">
+                            <i class="fa-solid fa-trash ml-1"></i>حذف الهدف
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleAddCriminal(e) {
+            e.preventDefault();
+            const newCrim = {
+                id: 'crim_' + Date.now(),
+                name: document.getElementById('crimName').value,
+                alias: document.getElementById('crimAlias').value,
+                threat: document.getElementById('crimThreat').value,
+                status: document.getElementById('crimStatus').value,
+                photo: document.getElementById('crimPhoto').value || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300',
+                desc: document.getElementById('crimDesc').value
+            };
+
+            db.criminals.push(newCrim);
+            saveStorage();
+            renderAllSections();
+            renderNetworkGraph();
+            toggleModal('addCriminalModal', false);
+            addActivityLog(`تم إضافة هدف جديد إلى النظام: ${newCrim.name} (${newCrim.alias})`);
+            document.getElementById('criminalForm').reset();
+        }
+
+        function deleteCriminal(id) {
+            if (confirm('هل أنت تأكد من حذف هذا الهدف من قاعدة البيانات؟')) {
+                db.criminals = db.criminals.filter(c => c.id !== id);
+                db.links = db.links.filter(l => l.from !== id && l.to !== id);
+                saveStorage();
+                renderAllSections();
+                renderNetworkGraph();
+                addActivityLog(`تم حذف الهدف برقم معرف: ${id}`);
+            }
+        }
+
+        function openLinkModal() {
+            const fromSelect = document.getElementById('linkFrom');
+            const toSelect = document.getElementById('linkTo');
+
+            const options = db.criminals.map(c => `<option value="${c.id}">${c.name} (${c.alias})</option>`).join('');
+            fromSelect.innerHTML = options;
+            toSelect.innerHTML = options;
+
+            toggleModal('linkModal', true);
+        }
+
+        function handleCreateLink(e) {
+            e.preventDefault();
+            const from = document.getElementById('linkFrom').value;
+            const to = document.getElementById('linkTo').value;
+            const label = document.getElementById('linkLabel').value;
+
+            if (from === to) {
+                alert('لا يمكن ربط الهدف بنفسه!');
+                return;
+            }
+
+            db.links.push({ from, to, label });
+            saveStorage();
+            renderNetworkGraph();
+            toggleModal('linkModal', false);
+            addActivityLog(`تم إنشاء رابط شبكي جديد بين الهدفين.`);
+            document.getElementById('linkForm').reset();
+        }
+
+        function renderNetworkGraph() {
+            const container = document.getElementById('networkVisualization');
+            if (!container) return;
+
+            const nodes = db.criminals.map(c => ({
+                id: c.id,
+                label: `${c.name}\n(${c.alias})`,
+                shape: 'circularImage',
+                image: c.photo || 'https://placehold.co/100?text=Target',
+                color: {
+                    border: c.threat === 'CRITICAL' ? '#ff2a6d' : '#00f0ff',
+                    background: '#0d1527'
+                },
+                font: { color: '#ffffff', face: 'Changa', size: 12 }
+            }));
+
+            const edges = db.links.map(l => ({
+                from: l.from,
+                to: l.to,
+                label: l.label,
+                color: { color: '#00f0ff', opacity: 0.7 },
+                font: { color: '#d4af37', face: 'Changa', size: 10, align: 'top' }
+            }));
+
+            const data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
+            const options = {
+                nodes: { borderWidth: 2, size: 25 },
+                edges: { width: 2, smooth: { type: 'continuous' } },
+                physics: { stabilization: false, barnesHut: { springLength: 120 } }
+            };
+
+            if (visNetworkInstance) visNetworkInstance.destroy();
+            visNetworkInstance = new vis.Network(container, data, options);
+        }
+
+        function renderReports() {
+            const container = document.getElementById('reportsList');
+            document.getElementById('reportsCountBadge').innerText = db.reports.length;
+
+            if (db.reports.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-500 text-xs py-4">لا توجد تقارير مخزنة.</div>`;
+                return;
+            }
+
+            container.innerHTML = db.reports.map((r) => `
+                <div onclick="viewReport('${r.id}')" class="p-3 bg-cia-bg/80 hover:bg-cia-border/40 border border-cia-border rounded cursor-pointer transition space-y-1">
+                    <div class="flex justify-between items-center text-[10px] font-mono">
+                        <span class="text-cia-gold font-bold">${r.classification}</span>
+                        <span class="text-gray-500">${r.date}</span>
+                    </div>
+                    <div class="font-bold text-white text-xs truncate">${r.title}</div>
+                    <div class="text-[10px] text-gray-400 font-mono">المنطقة: ${r.region}</div>
+                </div>
+            `).join('');
+
+            if (db.reports.length > 0 && !document.getElementById('currentReportTitle')) {
+                viewReport(db.reports[0].id);
+            }
+        }
+
+        function viewReport(id) {
+            const r = db.reports.find(item => item.id === id);
+            if (!r) return;
+
+            const viewer = document.getElementById('reportContentView');
+            viewer.innerHTML = `
+                <div class="border-2 border-cia-gold p-6 rounded bg-cia-dark/90 space-y-4 relative">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-cia-border pb-4 gap-2">
+                        <div>
+                            <span class="bg-red-950 text-red-500 border border-red-800 text-xs px-2 py-0.5 font-mono font-bold tracking-widest uppercase">
+                                ${r.classification}
+                            </span>
+                            <h3 id="currentReportTitle" class="text-lg font-bold text-white mt-2">${r.title}</h3>
+                        </div>
+                        <div class="text-left font-mono text-xs text-gray-400">
+                            <div>FILE ID: #${r.id.toUpperCase()}</div>
+                            <div>DATE: ${r.date}</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs font-mono text-gray-300 bg-cia-bg p-3 rounded border border-cia-border/50">
+                        <div>المنطقة / الإقليم: <span class="text-cia-accent">${r.region}</span></div>
+                        <div>العميل المحرر: <span class="text-cia-gold">${r.author}</span></div>
+                    </div>
+
+                    <div class="text-sm leading-relaxed text-gray-200 py-2 border-b border-cia-border/50">
+                        ${r.content.replace(/\n/g, '<br>')}
+                    </div>
+
+                    <div class="pt-4 flex justify-between items-center text-xs font-mono">
+                        <div class="text-red-500 font-bold border-2 border-red-600 px-3 py-1 rounded tracking-widest opacity-80 rotate-[-4deg]">
+                            CLASSIFIED • CIA INTERNAL ONLY
+                        </div>
+                        <button onclick="printReport('${r.id}')" class="bg-cia-accent hover:bg-cyan-400 text-black font-bold px-3 py-1.5 rounded transition flex items-center gap-1">
+                            <i class="fa-solid fa-print"></i> طباعة / تصدير التقرير
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleAddReport(e) {
+            e.preventDefault();
+            const newRep = {
+                id: 'rep_' + Date.now(),
+                title: document.getElementById('repTitle').value,
+                classification: document.getElementById('repClassification').value,
+                region: document.getElementById('repRegion').value,
+                content: document.getElementById('repContent').value,
+                date: new Date().toISOString().split('T')[0],
+                author: 'Agent_alpha'
+            };
+
+            db.reports.unshift(newRep);
+            saveStorage();
+            renderReports();
+            viewReport(newRep.id);
+            toggleModal('addReportModal', false);
+            addActivityLog(`تم إنشاء تقرير استخباراتي سري جديد: ${newRep.title}`);
+            document.getElementById('reportForm').reset();
+        }
+
+        // PERFECTED REPORT PRINT FUNCTION
+        function printReport(id) {
+            const r = db.reports.find(item => item.id === id);
+            if (!r) return;
+
+            const printContainer = document.getElementById('printableArea');
+            printContainer.innerHTML = `
+                <div style="font-family: Arial, sans-serif; padding: 40px; color: #000; direction: rtl; width:100%; max-width:800px; margin: 0 auto;">
+                    <div style="text-align: center; border-bottom: 3px solid #000; padding-bottom: 15px; margin-bottom: 25px;">
+                        <h1 style="margin:0; font-size:24px; font-weight:bold; tracking-wide:1px;">CENTRAL INTELLIGENCE AGENCY</h1>
+                        <h3 style="margin:8px 0 0 0; color: #cc0000; font-size:16px;">OFFICIAL INTELLIGENCE DOSSIER - ${r.classification}</h3>
+                    </div>
+                    <table style="width: 100%; margin-bottom: 25px; font-size: 13px; border-collapse: collapse;">
+                        <tr style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 6px 0;"><strong>عنوان التقرير:</strong> ${r.title}</td>
+                            <td style="padding: 6px 0; text-align:left;"><strong>التاريخ:</strong> ${r.date}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 6px 0;"><strong>المنطقة / الإقليم:</strong> ${r.region}</td>
+                            <td style="padding: 6px 0; text-align:left;"><strong>العميل المحرر:</strong> ${r.author}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0;"><strong>رقم المرجع:</strong> #${r.id.toUpperCase()}</td>
+                            <td style="padding: 6px 0; text-align:left;"><strong>الحالة:</strong> VERIFIED ARCHIVE</td>
+                        </tr>
+                    </table>
+                    <div style="font-size: 14px; line-height: 1.8; margin-top: 20px; text-align: justify; border-top: 1px solid #000; padding-top: 20px;">
+                        ${r.content.replace(/\n/g, '<br>')}
+                    </div>
+                    <div style="margin-top: 60px; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="border: 2px red solid; color: red; padding: 8px 16px; font-weight: bold; font-size: 12px; letter-spacing: 2px;">
+                            TOP SECRET / RESTRICTED
+                        </div>
+                        <div style="font-size: 11px; color: #555;">
+                            ختم التوثيق الميداني - CIA HEADQUARTERS
+                        </div>
+                    </div>
+                </div>
+            `;
+            window.print();
+        }
+
+        function handleAgentRegistration(e) {
+            e.preventDefault();
+            const name = document.getElementById('agentFullName').value;
+            const codename = document.getElementById('agentCodename').value;
+            const clearance = document.getElementById('agentClearance').value;
+            const specialty = document.getElementById('agentSpecialty').value;
+            const photo = document.getElementById('agentPhotoUrl').value || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300';
+
+            const agentId = 'CIA-' + Math.floor(10000 + Math.random() * 90000);
+
+            document.getElementById('badgeName').innerText = name;
+            document.getElementById('badgeCode').innerText = codename;
+            document.getElementById('badgeClearance').innerText = clearance;
+            document.getElementById('badgeSpecialty').innerText = specialty;
+            document.getElementById('badgeIdNum').innerText = 'ID: ' + agentId;
+            document.getElementById('badgeImg').src = photo;
+
+            const newAgent = { id: agentId, name, codename, clearance, specialty, photo };
+            db.agents.push(newAgent);
+            saveStorage();
+            renderAgents();
+
+            addActivityLog(`تم إصدار تصريح أمني جديد للعميل: ${name} (${codename})`);
+        }
+
+        function renderAgents() {
+            const tableBody = document.getElementById('agentsTableBody');
+            tableBody.innerHTML = db.agents.map(a => `
+                <tr class="hover:bg-cia-border/30 transition">
+                    <td class="p-2 flex items-center gap-2">
+                        <img src="${a.photo}" class="w-6 h-6 rounded-full object-cover border border-cia-border">
+                        <span>${a.name}</span>
+                    </td>
+                    <td class="p-2 text-cia-gold">${a.codename}</td>
+                    <td class="p-2 text-cia-accent">${a.clearance}</td>
+                    <td class="p-2">${a.specialty}</td>
+                    <td class="p-2 font-mono text-gray-400">${a.id}</td>
+                </tr>
+            `).join('');
+        }
+
+        // PERFECTED AGENT BADGE PRINT FUNCTION - Completely avoids white blank screen issues
+        function printAgentBadge() {
+            const name = document.getElementById('badgeName').innerText;
+            const codename = document.getElementById('badgeCode').innerText;
+            const clearance = document.getElementById('badgeClearance').innerText;
+            const specialty = document.getElementById('badgeSpecialty').innerText;
+            const idNum = document.getElementById('badgeIdNum').innerText;
+            const photoSrc = document.getElementById('badgeImg').src;
+
+            const printContainer = document.getElementById('printableArea');
+            printContainer.innerHTML = `
+                <div class="print-badge-card" style="direction: rtl; font-family: 'Share Tech Mono', sans-serif;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d4af37; padding-bottom: 10px; margin-bottom: 15px;">
+                        <div>
+                            <div style="font-size: 13px; font-weight: bold; color: #ffffff; letter-spacing: 1px;">CENTRAL INTELLIGENCE AGENCY</div>
+                            <div style="font-size: 9px; color: #00f0ff;">OFFICIAL CREDENTIAL • SECURITY BADGE</div>
+                        </div>
+                        <div style="font-size: 10px; color: #d4af37; border: 1px solid #d4af37; padding: 2px 6px; border-radius: 4px;">VERIFIED</div>
+                    </div>
+
+                    <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px;">
+                        <img src="${photoSrc}" style="width: 90px; height: 110px; border-radius: 6px; object-fit: cover; border: 2px solid #1e2d4a;">
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <div>
+                                <div style="font-size: 9px; color: #888;">FULL NAME:</div>
+                                <div style="font-size: 14px; font-weight: bold; color: #ffffff;">${name}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 9px; color: #888;">CODENAME:</div>
+                                <div style="font-size: 12px; font-weight: bold; color: #d4af37;">${codename}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 9px; color: #888;">CLEARANCE:</div>
+                                <div style="font-size: 10px; color: #00f0ff; font-weight: bold;">${clearance}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px solid #1e2d4a; padding-top: 10px; display: flex; justify-content: space-between; font-size: 10px; color: #aaaaaa;">
+                        <div>SPECIALTY: <span style="color:#fff;">${specialty}</span></div>
+                        <div style="color: #00f0ff; font-weight: bold;">${idNum}</div>
+                    </div>
+                </div>
+            `;
+
+            window.print();
+        }
+
+        function toggleModal(modalId, show) {
+            const modal = document.getElementById(modalId);
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
