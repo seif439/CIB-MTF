@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم الإدارية | RoAdmin Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f6ff',
+                            100: '#e0edff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#0f172a',
+                        },
+                        dark: {
+                            bg: '#0a0d14',
+                            card: '#121824',
+                            border: '#1e293b',
+                            hover: '#1a2333'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Tajawal', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Tajawal & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #0a0d14;
+            color: #f3f4f6;
+        }
+        /* Glassmorphism Effect */
+        .glass-card {
+            background: rgba(18, 24, 36, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card-hover:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0d14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b82f6;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Navbar Header -->
+    <header class="sticky top-0 z-40 w-full glass-card border-b border-gray-800/80 px-4 lg:px-8 py-3">
+        <div class="flex items-center justify-between">
+            <!-- Logo & Title -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-brand-500/20">
+                    <i class="fa-solid fa-shield-halved text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-wide text-white flex items-center gap-2">
+                        RoAdmin Dashboard
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-500 border border-brand-500/20">Pro v2.5</span>
+                    </h1>
+                    <p class="text-xs text-gray-400">لوحة تحكم إدارية حية لسيرفر روبلوكس</p>
+                </div>
+            </div>
+
+            <!-- Server Connection Status & Config Tabs -->
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    متصل بالسيرفر الحي
+                </div>
+
+                <button onclick="switchTab('setup-modal')" class="px-3.5 py-1.5 rounded-lg bg-dark-card hover:bg-gray-800 border border-gray-700 text-xs font-medium text-gray-200 transition flex items-center gap-2">
+                    <i class="fa-solid fa-code text-brand-500"></i>
+                    <span>أكواد Replit & Roblox</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+
+        <!-- Top Metrics Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Active Players -->
+            <div class="glass-card glass-card-hover rounded-2xl p-5 transition duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-400">اللاعبين المتواجدين</p>
+                        <h3 class="text-2xl font-bold text-white mt-1" id="stat-active-players">12 / 50</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center gap-1.5 text-xs text-emerald-400">
+                    <i class="fa-solid fa-arrow-up"></i>
+                    <span>تحديث مستمر كُل 3 ثوانٍ</span>
+                </div>
+            </div>
+
+            <!-- Server Latency -->
+            <div class="glass-card glass-card-hover rounded-2xl p-5 transition duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-400">استجابة السيرفر (Ping)</p>
+                        <h3 class="text-2xl font-bold text-white mt-1" id="stat-ping">42 ms</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-gray-400">
+                    الحالة: <span class="text-emerald-400 font-semibold">ممتازة</span>
+                </div>
+            </div>
+
+            <!-- Anti-Cheat Detections -->
+            <div class="glass-card glass-card-hover rounded-2xl p-5 transition duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-400">تنبيهات الأنتي تشيت</p>
+                        <h3 class="text-2xl font-bold text-rose-500 mt-1" id="stat-alerts">3</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-rose-400/80">
+                    آخر تنبيه منذ 5 دقائق
+                </div>
+            </div>
+
+            <!-- Server Commands Sent -->
+            <div class="glass-card glass-card-hover rounded-2xl p-5 transition duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-400">الأوامر المطبقة اليوم</p>
+                        <h3 class="text-2xl font-bold text-white mt-1" id="stat-commands">28</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-terminal"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-gray-400">
+                    تشمل Kick, Ban, Give Tool
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Live Players Table (Spans 2 columns) -->
+            <div class="lg:col-span-2 glass-card rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+                <div>
+                    <!-- Header Actions -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-800">
+                        <div>
+                            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-gamepad text-brand-500"></i>
+                                اللاعبين المتواجدين في السيرفر
+                            </h2>
+                            <p class="text-xs text-gray-400">تحكم باللاعبين، الموقع، الأدوات، ورتبهم مباشرة</p>
+                        </div>
+                        <!-- Search input -->
+                        <div class="relative w-full sm:w-64">
+                            <i class="fa-solid fa-magnifying-glass absolute right-3 top-2.5 text-xs text-gray-500"></i>
+                            <input type="text" id="player-search" oninput="filterPlayers()" placeholder="بحث باسم اللاعب أو الرتبة..." 
+                                class="w-full pl-3 pr-8 py-1.5 rounded-lg bg-dark-bg border border-gray-800 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-brand-500">
+                        </div>
+                    </div>
+
+                    <!-- Table Responsive Wrapper -->
+                    <div class="overflow-x-auto mt-4">
+                        <table class="w-full text-right text-xs text-gray-300">
+                            <thead class="bg-dark-bg/60 text-gray-400 uppercase font-semibold border-b border-gray-800">
+                                <tr>
+                                    <th class="p-3">اللاعب</th>
+                                    <th class="p-3">الرتبة</th>
+                                    <th class="p-3">الأدوات (Tools)</th>
+                                    <th class="p-3">الموقع (Pos)</th>
+                                    <th class="p-3 text-center">الإجراءات السريعة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="players-table-body" class="divide-y divide-gray-800/60">
+                                <!-- Dynamic Player Rows JavaScript Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-gray-800 flex items-center justify-between text-xs text-gray-500">
+                    <span>يتم تحديث قائمة اللاعبين تلقائياً</span>
+                    <button onclick="fetchSimulatedData()" class="text-brand-500 hover:underline flex items-center gap-1">
+                        <i class="fa-solid fa-rotate-right"></i> تحديث يدوي
+                    </button>
+                </div>
+            </div>
+
+            <!-- Anti-Cheat & Security Logs Side Panel -->
+            <div class="glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+                <div>
+                    <div class="flex items-center justify-between pb-4 border-b border-gray-800">
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-shield-virus text-rose-500"></i>
+                            سجل الأنتي تشيت
+                        </h2>
+                        <span class="px-2 py-0.5 rounded text-[10px] bg-rose-500/10 border border-rose-500/30 text-rose-400 font-semibold">مباشر</span>
+                    </div>
+
+                    <div id="anticheat-logs-list" class="space-y-3 mt-4 max-h-[420px] overflow-y-auto pr-1">
+                        <!-- Dynamic Anti-Cheat Logs -->
+                    </div>
+                </div>
+
+                <button onclick="clearAntiCheatLogs()" class="w-full py-2 rounded-xl bg-gray-800/80 hover:bg-gray-800 text-xs text-gray-400 transition">
+                    مسح السجلات السابقة
+                </button>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-card border-t border-gray-800/80 py-4 px-6 text-center text-xs text-gray-500 mt-auto">
+        <p>RoAdmin Roblox Bridge System &bull; تم التطوير خصيصاً للربط المباشر مع Replit و Discord</p>
+    </footer>
+
+    <!-- Action Modal (Kick / Ban / Give Tool / Give Rank) -->
+    <div id="action-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="glass-card rounded-2xl max-w-md w-full p-6 space-y-5 border border-gray-700/80 shadow-2xl relative">
+            <button onclick="closeModal()" class="absolute top-4 left-4 text-gray-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center gap-3 border-b border-gray-800 pb-3">
+                <div id="modal-icon" class="w-10 h-10 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-500 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-user-gear"></i>
+                </div>
+                <div>
+                    <h3 id="modal-title" class="text-base font-bold text-white">إجراء إداري على اللاعب</h3>
+                    <p id="modal-subtitle" class="text-xs text-gray-400">تطبيق تغييرات على اللاعب المحدد</p>
+                </div>
+            </div>
+
+            <form id="action-form" onsubmit="handleActionSubmit(event)" class="space-y-4">
+                <input type="hidden" id="modal-target-user">
+                <input type="hidden" id="modal-action-type">
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">اسم اللاعب المستهدف</label>
+                    <input type="text" id="modal-username-display" readonly class="w-full px-3 py-2 rounded-xl bg-dark-bg border border-gray-800 text-xs text-gray-300 cursor-not-allowed">
+                </div>
+
+                <!-- Input for Tool Name or Rank Name -->
+                <div id="modal-extra-input-container" class="hidden">
+                    <label id="modal-extra-label" class="block text-xs font-semibold text-gray-400 mb-1">الاسم</label>
+                    <input type="text" id="modal-extra-input" class="w-full px-3 py-2 rounded-xl bg-dark-bg border border-gray-800 text-xs text-white focus:outline-none focus:border-brand-500" placeholder="اكتب الاسم هنا...">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">السبب / ملاحظات الإدارة</label>
+                    <textarea id="modal-reason-input" rows="3" class="w-full px-3 py-2 rounded-xl bg-dark-bg border border-gray-800 text-xs text-white focus:outline-none focus:border-brand-500" placeholder="اكتب سبب الطرد/الحظر أو الملاحظات..."></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-medium text-gray-300">إلغاء</button>
+                    <button type="submit" id="modal-submit-btn" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-xs font-semibold text-white shadow-lg shadow-brand-500/20">تأكيد الإجراء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Code Setup Modal (Replit Code & Luau Code) -->
+    <div id="setup-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-card rounded-2xl max-w-3xl w-full p-6 space-y-4 border border-gray-700/80 shadow-2xl relative max-h-[85vh] flex flex-col">
+            <button onclick="closeSetupModal()" class="absolute top-4 left-4 text-gray-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="border-b border-gray-800 pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-code text-brand-500"></i>
+                    أكواد الربط لـ Replit & Roblox
+                </h3>
+                <p class="text-xs text-gray-400">انسخ الأكواد التالية للربط بين سيرفر Node.js وروبلوكس استوديو</p>
+            </div>
+
+            <!-- Modal Code Navigation Tabs -->
+            <div class="flex border-b border-gray-800 gap-2">
+                <button onclick="toggleCodeTab('replit')" id="tab-btn-replit" class="px-4 py-2 border-b-2 border-brand-500 text-brand-400 text-xs font-bold">كود Node.js (Replit)</button>
+                <button onclick="toggleCodeTab('luau')" id="tab-btn-luau" class="px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-white text-xs font-bold">كود روبلوكس (Luau)</button>
+            </div>
+
+            <!-- Code Content Box -->
+            <div class="flex-1 overflow-y-auto relative bg-dark-bg p-4 rounded-xl border border-gray-800">
+                <!-- Replit Express Code -->
+                <div id="code-content-replit" class="space-y-2">
+                    <div class="flex justify-between items-center text-xs text-gray-400">
+                        <span>ضع هذا الكود في ملف <code class="text-brand-400">index.js</code> على Replit:</span>
+                        <button onclick="copyToClipboard('code-replit-text')" class="px-2.5 py-1 rounded bg-brand-600/20 text-brand-400 hover:bg-brand-600/40 text-[11px]"><i class="fa-regular fa-copy"></i> نسخ الكود</button>
+                    </div>
+                    <pre id="code-replit-text" class="text-[11px] text-emerald-400 font-mono overflow-x-auto p-2 bg-black/40 rounded-lg">
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+const PORT = process.env.PORT || 3000;
+const SECRET_KEY = process.env.ROBLOX_SECRET || "my_secret_key_123";
+
+let pendingCommands = [];
+let livePlayersData = [];
+
+// API Endpoint for Roblox Sync
+app.all('/api/public/roblox/sync', (req, res) => {
+    const authHeader = req.headers['authorization'];
+    if (authHeader !== SECRET_KEY) return res.status(401).json({ error: 'Unauthorized' });
+
+    if (req.method === 'POST' && req.body.players) {
+        livePlayersData = req.body.players;
+    }
+
+    const cmds = [...pendingCommands];
+    pendingCommands = [];
+    res.json({ commands: cmds });
+});
+
+// Anti-Cheat Webhook Endpoint
+app.post('/api/public/roblox/anticheat', (req, res) => {
+    const authHeader = req.headers['authorization'];
+    if (authHeader !== SECRET_KEY) return res.status(401).json({ error: 'Unauthorized' });
+    
+    console.log("AntiCheat Alert:", req.body);
+    res.json({ status: 'received' });
+});
+
+app.listen(PORT, () => console.log(`RoAdmin Server Running on Port ${PORT}`));
+                    </pre>
+                </div>
+
+                <!-- Luau Roblox Code -->
+                <div id="code-content-luau" class="hidden space-y-2">
+                    <div class="flex justify-between items-center text-xs text-gray-400">
+                        <span>ضع هذا الكود داخل <code class="text-brand-400">ServerScriptService</code> في روبلوكس:</span>
+                        <button onclick="copyToClipboard('code-luau-text')" class="px-2.5 py-1 rounded bg-brand-600/20 text-brand-400 hover:bg-brand-600/40 text-[11px]"><i class="fa-regular fa-copy"></i> نسخ الكود</button>
+                    </div>
+                    <pre id="code-luau-text" class="text-[11px] text-amber-300 font-mono overflow-x-auto p-2 bg-black/40 rounded-lg">
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+
+local BRIDGE_URL = "https://YOUR-APP-NAME.replit.app/api/public/roblox/sync"
+local SECRET_KEY = "my_secret_key_123"
+
+local function collectPlayers()
+	local list = {}
+	for _, p in ipairs(Players:GetPlayers()) do
+		local char = p.Character
+		local hrp = char and char:FindFirstChild("HumanoidRootPart")
+		local pos = hrp and hrp.Position or Vector3.zero
+		table.insert(list, {
+			name = p.Name,
+			displayName = p.DisplayName,
+			rank = p:GetAttribute("Rank") or "لاعب",
+			position = { x = math.round(pos.X), y = math.round(pos.Y), z = math.round(pos.Z) },
+			tools = {}
+		})
+	end
+	return list
+end
+
+task.spawn(function()
+	while true do
+		task.wait(3)
+		pcall(function()
+			local res = HttpService:RequestAsync({
+				Url = BRIDGE_URL,
+				Method = "POST",
+				Headers = { ["Content-Type"] = "application/json", ["Authorization"] = SECRET_KEY },
+				Body = HttpService:JSONEncode({ players = collectPlayers() })
+			})
+		end)
+	end
+end)
+                    </pre>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+                <button onclick="closeSetupModal()" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-xs font-semibold text-white">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast-container" class="fixed bottom-5 left-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Mock Live Players Initial State
+        let players = [
+            { id: 1, username: "Fahad_Admin", displayName: "فهد القحطاني", rank: "Super Admin", position: {x: 124, y: 15, z: -88}, tools: ["AdminGun", "FlyTool"] },
+            { id: 2, username: "Shadow_Racer", displayName: "سلطان الروقي", rank: "VIP", position: {x: -45, y: 10, z: 230}, tools: ["SpeedBooster"] },
+            { id: 3, username: "Ahmed_Gamer99", displayName: "أحمد", rank: "لاعب", position: {x: 0, y: 12, z: 5}, tools: ["Flashlight"] },
+            { id: 4, username: "Pro_Builder_KSA", displayName: "عمر الحربي", rank: "مطور (Developer)", position: {x: 310, y: 55, z: 120}, tools: ["BuildingHammer", "Btools"] },
+            { id: 5, username: "NoobMaster_2026", displayName: "خالد", rank: "لاعب", position: {x: 88, y: 10, z: -12}, tools: [] }
+        ];
+
+        // Anti-Cheat Logs Mock
+        let antiCheatLogs = [
+            { id: 101, username: "Hacker_Pro_xX", cheatType: "Speed Hack (سرعة فائقة)", details: "تجاوز السرعة المحددة (سجل 180 studs/s)", time: "منذ 3 دقائق" },
+            { id: 102, username: "FlyGuy999", cheatType: "Noclip / Fly Hack", details: "الطيران بدون أداة مخصصة على ارتفاع 200m", time: "منذ 12 دقيقة" },
+            { id: 103, username: "NoobMaster_2026", cheatType: "Teleport Suspect", details: "انتقال مفاجئ لمسافة 500m خلال ثانية واحدة", time: "منذ 25 دقيقة" }
+        ];
+
+        let commandsExecutedCount = 28;
+
+        // Initialize UI
+        document.addEventListener("DOMContentLoaded", () => {
+            renderPlayersTable(players);
+            renderAntiCheatLogs();
+            
+            // Auto update simulation loop every 4 seconds
+            setInterval(() => {
+                simulatePlayerMovement();
+            }, 4000);
+        });
+
+        // Render Players Table
+        function renderPlayersTable(playersList) {
+            const tbody = document.getElementById("players-table-body");
+            tbody.innerHTML = "";
+
+            if (playersList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-500">لا يوجد لاعبين مطبقين للبحث حالياً.</td></tr>`;
+                return;
+            }
+
+            playersList.forEach(p => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-dark-hover/70 transition duration-150";
+
+                const rankBadgeClass = p.rank.includes("Admin") 
+                    ? "bg-rose-500/10 text-rose-400 border-rose-500/30" 
+                    : p.rank.includes("VIP") 
+                    ? "bg-amber-500/10 text-amber-400 border-amber-500/30" 
+                    : p.rank.includes("مطور") 
+                    ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/30" 
+                    : "bg-gray-800 text-gray-300 border-gray-700";
+
+                const toolsTags = p.tools.length > 0 
+                    ? p.tools.map(t => `<span class="px-1.5 py-0.5 rounded bg-dark-bg border border-gray-800 text-[10px] text-gray-300">${t}</span>`).join(" ") 
+                    : `<span class="text-gray-600 text-[11px]">بدون أدوات</span>`;
+
+                tr.innerHTML = `
+                    <td class="p-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-brand-600/20 text-brand-400 font-bold flex items-center justify-center text-xs">
+                                ${p.displayName.charAt(0)}
+                            </div>
+                            <div>
+                                <div class="font-bold text-white text-xs">${p.displayName}</div>
+                                <div class="text-[11px] text-gray-500">@${p.username}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded-full border text-[10px] font-semibold ${rankBadgeClass}">
+                            ${p.rank}
+                        </span>
+                    </td>
+                    <td class="p-3">
+                        <div class="flex flex-wrap gap-1">${toolsTags}</div>
+                    </td>
+                    <td class="p-3 font-mono text-[11px] text-emerald-400">
+                        X:${p.position.x}, Y:${p.position.y}, Z:${p.position.z}
+                    </td>
+                    <td class="p-3">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="openModal('${p.username}', 'KICK')" class="px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 text-[11px] font-medium transition" title="طرد">
+                                <i class="fa-solid fa-user-minus"></i> KICK
+                            </button>
+                            <button onclick="openModal('${p.username}', 'BAN')" class="px-2 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-[11px] font-medium transition" title="حظر">
+                                <i class="fa-solid fa-ban"></i> BAN
+                            </button>
+                            <button onclick="openModal('${p.username}', 'GIVE_TOOL')" class="px-2 py-1 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 text-[11px] font-medium transition" title="إعطاء أداة">
+                                <i class="fa-solid fa-toolbox"></i> أداة
+                            </button>
+                            <button onclick="openModal('${p.username}', 'GIVE_RANK')" class="px-2 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-[11px] font-medium transition" title="منح رتبة">
+                                <i class="fa-solid fa-crown"></i> رتبة
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById("stat-active-players").innerText = `${playersList.length} / 50`;
+        }
+
+        // Render Anti-Cheat Logs
+        function renderAntiCheatLogs() {
+            const container = document.getElementById("anticheat-logs-list");
+            container.innerHTML = "";
+
+            if (antiCheatLogs.length === 0) {
+                container.innerHTML = `<p class="text-center text-xs text-gray-500 py-4">سجل المخالفات نظيف تماماً.</p>`;
+                return;
+            }
+
+            antiCheatLogs.forEach(log => {
+                const card = document.createElement("div");
+                card.className = "p-3 rounded-xl bg-rose-950/20 border border-rose-500/20 space-y-1.5 transition hover:border-rose-500/40";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold text-rose-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            @${log.username}
+                        </span>
+                        <span class="text-[10px] text-gray-500">${log.time}</span>
+                    </div>
+                    <div class="text-xs font-medium text-gray-200">${log.cheatType}</div>
+                    <p class="text-[11px] text-gray-400">${log.details}</p>
+                    <div class="pt-1 flex justify-end gap-2">
+                        <button onclick="openModal('${log.username}', 'BAN')" class="px-2 py-0.5 rounded bg-rose-600 hover:bg-rose-500 text-[10px] text-white font-semibold">
+                            باند فوراً
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById("stat-alerts").innerText = antiCheatLogs.length;
+        }
+
+        // Filter Players Search Input
+        function filterPlayers() {
+            const query = document.getElementById("player-search").value.toLowerCase();
+            const filtered = players.filter(p => 
+                p.username.toLowerCase().includes(query) || 
+                p.displayName.toLowerCase().includes(query) || 
+                p.rank.toLowerCase().includes(query)
+            );
+            renderPlayersTable(filtered);
+        }
+
+        // Modal Handling Logic
+        function openModal(username, actionType) {
+            document.getElementById("action-modal").classList.remove("hidden");
+            document.getElementById("modal-target-user").value = username;
+            document.getElementById("modal-username-display").value = username;
+            document.getElementById("modal-action-type").value = actionType;
+
+            const extraContainer = document.getElementById("modal-extra-input-container");
+            const extraLabel = document.getElementById("modal-extra-label");
+            const extraInput = document.getElementById("modal-extra-input");
+            const submitBtn = document.getElementById("modal-submit-btn");
+
+            extraContainer.classList.add("hidden");
+
+            if (actionType === 'KICK') {
+                document.getElementById("modal-title").innerText = `طرد اللاعب (${username})`;
+                document.getElementById("modal-subtitle").innerText = "سيتم إنهاء الجلسة الحالية للاعب وطرده من السيرفر.";
+                submitBtn.className = "px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-xs font-semibold text-white";
+                submitBtn.innerText = "تأكيد الطرد (Kick)";
+            } else if (actionType === 'BAN') {
+                document.getElementById("modal-title").innerText = `حظر اللاعب (${username})`;
+                document.getElementById("modal-subtitle").innerText = "سيتم حظر اللاعب نهائياً ومنعه من الدخول للسيرفر.";
+                submitBtn.className = "px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white";
+                submitBtn.innerText = "تأكيد الحظر (Ban)";
+            } else if (actionType === 'GIVE_TOOL') {
+                document.getElementById("modal-title").innerText = `إعطاء أداة للاعب (${username})`;
+                document.getElementById("modal-subtitle").innerText = "إضافة أداة جديدة لحقيبة اللاعب داخل اللعبة.";
+                extraContainer.classList.remove("hidden");
+                extraLabel.innerText = "اسم الأداة (Tool Name in ServerStorage)";
+                extraInput.placeholder = "مثال: AdminGun, SpeedBooster...";
+                submitBtn.className = "px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-xs font-semibold text-white";
+                submitBtn.innerText = "إرسال الأداة";
+            } else if (actionType === 'GIVE_RANK') {
+                document.getElementById("modal-title").innerText = `منح رتبة للاعب (${username})`;
+                document.getElementById("modal-subtitle").innerText = "تعديل رتبة وصلاحيات اللاعب بالماب.";
+                extraContainer.classList.remove("hidden");
+                extraLabel.innerText = "اسم الرتبة الجديدة (Rank Name)";
+                extraInput.placeholder = "مثال: Super Admin, VIP, مطور...";
+                submitBtn.className = "px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white";
+                submitBtn.innerText = "تحديث الرتبة";
+            }
+        }
+
+        function closeModal() {
+            document.getElementById("action-modal").classList.add("hidden");
+            document.getElementById("action-form").reset();
+        }
+
+        // Handle Action Submission
+        function handleActionSubmit(e) {
+            e.preventDefault();
+            const username = document.getElementById("modal-target-user").value;
+            const actionType = document.getElementById("modal-action-type").value;
+            const extraVal = document.getElementById("modal-extra-input").value;
+            const reason = document.getElementById("modal-reason-input").value || "بدون سبب موضح";
+
+            const pIndex = players.findIndex(p => p.username === username);
+
+            if (actionType === 'KICK' || actionType === 'BAN') {
+                if (pIndex !== -1) {
+                    players.splice(pIndex, 1);
+                }
+                showToast(`تم إرسال أمر ${actionType} للاعب ${username} بنجاح!`, 'success');
+            } else if (actionType === 'GIVE_TOOL') {
+                if (pIndex !== -1 && extraVal) {
+                    players[pIndex].tools.push(extraVal);
+                }
+                showToast(`تم إعطاء الأداة (${extraVal}) للاعب ${username}`, 'success');
+            } else if (actionType === 'GIVE_RANK') {
+                if (pIndex !== -1 && extraVal) {
+                    players[pIndex].rank = extraVal;
+                }
+                showToast(`تم تغيير رتبة ${username} إلى (${extraVal})`, 'success');
+            }
+
+            commandsExecutedCount++;
+            document.getElementById("stat-commands").innerText = commandsExecutedCount;
+
+            renderPlayersTable(players);
+            closeModal();
+        }
+
+        // Clear Anti-Cheat Logs
+        function clearAntiCheatLogs() {
+            antiCheatLogs = [];
+            renderAntiCheatLogs();
+            showToast("تم مسح سجلات الأنتي تشيت بنجاح", 'info');
+        }
+
+        // Code Setup Modal Switches
+        function switchTab(modalId) {
+            document.getElementById(modalId).classList.remove("hidden");
+        }
+
+        function closeSetupModal() {
+            document.getElementById("setup-modal").classList.add("hidden");
+        }
+
+        function toggleCodeTab(tab) {
+            const replitBtn = document.getElementById("tab-btn-replit");
+            const luauBtn = document.getElementById("tab-btn-luau");
+            const replitContent = document.getElementById("code-content-replit");
+            const luauContent = document.getElementById("code-content-luau");
+
+            if (tab === 'replit') {
+                replitBtn.className = "px-4 py-2 border-b-2 border-brand-500 text-brand-400 text-xs font-bold";
+                luauBtn.className = "px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-white text-xs font-bold";
+                replitContent.classList.remove("hidden");
+                luauContent.classList.add("hidden");
+            } else {
+                luauBtn.className = "px-4 py-2 border-b-2 border-brand-500 text-brand-400 text-xs font-bold";
+                replitBtn.className = "px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-white text-xs font-bold";
+                luauContent.classList.remove("hidden");
+                replitContent.classList.add("hidden");
+            }
+        }
+
+        // Clipboard Copy Helper
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+            showToast("تم نسخ الكود إلى الحافظة!", 'info');
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            
+            const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-brand-600';
+            toast.className = `pointer-events-auto px-4 py-3 rounded-xl ${bgColor} text-white text-xs font-semibold shadow-xl flex items-center gap-2 transform transition duration-300 translate-y-2 opacity-0`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove("translate-y-2", "opacity-0");
+            }, 50);
+
+            setTimeout(() => {
+                toast.classList.add("opacity-0");
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Simulate Player Movement / Position Update
+        function simulatePlayerMovement() {
+            players.forEach(p => {
+                p.position.x += Math.floor(Math.random() * 5) - 2;
+                p.position.z += Math.floor(Math.random() * 5) - 2;
+            });
+            filterPlayers();
+        }
+
+        function fetchSimulatedData() {
+            showToast("تم مزامنة البيانات مع روبلوكس بنجاح", 'info');
+            simulatePlayerMovement();
+        }
+    </script>
+</body>
+</html>
